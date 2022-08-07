@@ -6,18 +6,21 @@ vRP = Proxy.getInterface("vRP")
 -- CONNECTION
 --------------------------------------------------------------------------------------------------------------------------------
 src = {}
-Tunnel.bindInterface("strixBuyArmaMuni", src)
-vSERVER = Tunnel.getInterface("strixBuyArmaMuni")
+Tunnel.bindInterface("strixBuyMuni", src)
+vSERVER = Tunnel.getInterface("strixBuyMuni")
 
 local marcacoesVenda = {
 	{-1470.31,871.55,183.58,'yardie'},  -- YARDIE
+	{1077.92,-1955.27,31.04,'russkaya'}  -- RUSSKAYA
 }
 
 local Estoque = {
 	{-1488.97,842.39,177.0},  -- YARDIE
+	{1077.61,-1972.7,31.48}  -- RUSSKAYA
 }
 local Banquinhos = {
 	{-1503.23,838.81,181.6,'Yardie'},  -- YARDIE
+	{1042.33,-1970.41,34.97,'Russkaya'}  -- RUSSKAYA
 }
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- COMPRA DE DROGA
