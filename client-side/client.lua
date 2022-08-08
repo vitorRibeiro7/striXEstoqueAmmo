@@ -10,8 +10,8 @@ Tunnel.bindInterface("strixBuyMuni", src)
 vSERVER = Tunnel.getInterface("strixBuyMuni")
 
 local marcacoesVenda = {
-	{-1470.31,871.55,183.58,'yardie'},  -- YARDIE
-	{1077.92,-1955.27,31.04,'russkaya'}  -- RUSSKAYA
+	{-1470.31,871.55,183.58,'Yardie'},  -- YARDIE
+	{1077.92,-1955.27,31.04,'Russkaya'}  -- RUSSKAYA
 }
 
 local Estoque = {
@@ -23,7 +23,7 @@ local Banquinhos = {
 	{1042.33,-1970.41,34.97,'Russkaya'}  -- RUSSKAYA
 }
 -----------------------------------------------------------------------------------------------------------------------------------------
--- COMPRA DE DROGA
+-- COMPRA DE MUNIÇÃO
 -----------------------------------------------------------------------------------------------------------------------------------------
 Citizen.CreateThread(function()
 	while true do
@@ -35,9 +35,9 @@ Citizen.CreateThread(function()
 			if distance <= 2.0 then	
 				DrawText3D(x,y,z+0.1,"~r~E~w~   COMPRAR")
 				if IsControlJustPressed(0,38) then
-					vSERVER.buyDrugs(text)
+					vSERVER.buyMuni(text)
 					TriggerEvent('cancelando', true)
-					vRP.playAnim(false, {{"amb@world_human_security_shine_torch@male@exit", "exit"}}, false)
+					-- vRP.playAnim(false, {{"amb@world_human_security_shine_torch@male@exit", "exit"}}, false)
 					Wait(1000)
 					TriggerEvent('cancelando', false)
 				end
