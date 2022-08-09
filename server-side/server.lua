@@ -31,6 +31,7 @@ function checkEstoque(fac, quantidade, tipo)
     local saldoFac = json.decode(saldo) or 0
 
     if saldoFac < quantidade then
+        TriggerClientEvent("Notify", source, "aviso", "Esta facção não tem esta quantidade em estoque.")
         return false
     else
         return true
@@ -290,24 +291,28 @@ function src.buyMuni(faccao)
             delayVMochila[user_id] = os.time()
             if user_id then
                 if vRP.tryFullPayment(user_id, quantidade * precoDaMuni) then
-                    local pagamento = quantidade * precoDaMuni
-                    TriggerClientEvent("cancelando", source, true)
-                    if checkEstoque(faccao, quantidade, tipo) then
-                        if retirarQTD(faccao, quantidade, tipo) then
-                            paymentFac(faccao, pagamento)
-                            vRP.giveInventoryItem(user_id, municao, quantidade)
+                    if vRP.getInventoryWeight(user_id)+vRP.getItemWeight(municao) <= vRP.getInventoryMaxWeight(user_id) then
+                        local pagamento = quantidade * precoDaMuni
+                        TriggerClientEvent("cancelando", source, true)
+                        if checkEstoque(faccao, quantidade, tipo) then
+                            if retirarQTD(faccao, quantidade, tipo) then
+                                paymentFac(faccao, pagamento)
+                                vRP.giveInventoryItem(user_id, municao, quantidade)
+                            end
+                        else
+                            TriggerClientEvent("Notify", source, 'aviso', 'Não temos essa munição no momento!')
+                            TriggerClientEvent(
+                                "Notify",
+                                source,
+                                "aviso",
+                                "teste"
+                            )
                         end
                     else
-                        TriggerClientEvent("Notify", source, 'aviso', 'Não temos essa munição no momento!')
-                        TriggerClientEvent(
-                            "Notify",
-                            source,
-                            "aviso",
-                            "teste"
-                        )
+                        TriggerClientEvent("Notify", source, "aviso", "Você não tem espaço na mochila.")
                     end
                 else
-                    TriggerClientEvent("Notify", source, 'aviso', 'Você não tem dinheiro suficiente!')
+                    TriggerClientEvent("Notify", source, "aviso", "Você não tem dinheiro suficiente.")
                 end
             end
         end
