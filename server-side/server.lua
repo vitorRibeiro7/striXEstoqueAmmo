@@ -6,8 +6,8 @@ local Proxy = module("vrp", "lib/Proxy")
 vRP = Proxy.getInterface("vRP")
 vRPclient = Tunnel.getInterface("vRP")
 src = {}
-Tunnel.bindInterface("strixBuyMuni", src)
-vCLIENT = Tunnel.getInterface("strixBuyMuni")
+Tunnel.bindInterface("striXestoqueAmmo", src)
+vCLIENT = Tunnel.getInterface("striXestoqueAmmo")
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- CHECK ESTOQUE
@@ -29,9 +29,9 @@ function checkEstoque(fac, quantidade, tipo)
 
     local saldo = vRP.getSData("strix:EstoqueMuni"..fac..""..tipo)
     local saldoFac = json.decode(saldo) or 0
+    print(type(saldoFac))
 
     if saldoFac < quantidade then
-        TriggerClientEvent("Notify", source, "aviso", "Esta facção não tem esta quantidade em estoque.")
         return false
     else
         return true
@@ -227,11 +227,13 @@ end
 local delayVMochila = {}
 
 function src.buyMuni(faccao)
-
+    local source = source
     local user_id = vRP.getUserId(source)
 
     local precoDaMuni = 0
     local municao = ""
+    local qtd 
+    local whatType
 
     TriggerClientEvent(
         "Notify",
@@ -239,74 +241,57 @@ function src.buyMuni(faccao)
         "aviso",
         "Cada pack de munições custam: <br> FiveSeven = $125K <br> Tec-9 = $265K <br> Mp5 = $346K <br> G36 = $468K <br> AK-47 = $532K"
     )
+
     
-    local tipo = tostring(vRP.prompt(source, "Qual tipo de munição deseja comprar? (five, tec, mp5, g36 ou ak)", ""))
+    whatType = vRP.prompt(source, "Qual tipo de munição deseja comprar? (five, tec, mp5, g36 ou ak)", "")
+    qtd = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
 
-    -- if tipo ~= "five" or tipo ~= "tec" or tipo ~= "mp5" or tipo ~= "g36" or tipo ~= "ak" then
-    --     TriggerClientEvent(
-    --         "Notify",
-    --         source,
-    --         "aviso",
-    --         "Item não identificado"
-    --     )
-    --     return false
-    -- end
-
-    local quantidade = 250
-
-    if tipo == "five" then
+    if whatType == "five" then
         precoDaMuni = 500
-        tipo = "Five"
+        whatType = "Five"
         municao = "wammo_WEAPON_PISTOL_MK2"
-    elseif tipo == "tec" then
+    elseif whatType == "tec" then
         precoDaMuni = 1060
-        tipo = "Tec"
+        whatType = "Tec"
         municao = "wammo_WEAPON_MACHINEPISTOL"
-    elseif tipo == "mp5" then
+    elseif whatType == "mp5" then
         precoDaMuni = 1384
-        tipo = "Mp5"
+        whatType = "Mp5"
         municao = "wammo_WEAPON_SMG"
-    elseif tipo == "g36" then
+    elseif whatType == "g36" then
         precoDaMuni = 1872
-        tipo = "G36"
+        whatType = "G36"
         municao = "wammo_WEAPON_SPECIALCARBINE_MK2"
-    elseif tipo == "ak" then
+    elseif whatType == "ak" then
         precoDaMuni = 2128
-        tipo = "AK"
+        whatType = "AK"
         municao = "wammo_WEAPON_ASSAULTRIFLE_MK2"
+    else
+
+        TriggerClientEvent("Notify", source,"Aviso", "Modelo não encontrado.")
+
+        return false
     end
 
-    if quantidade == nil then
-
-        TriggerClientEvent(
-            "Notify",
-            source,
-            "aviso",
-            "Aceitamos apenas numeros..."
-        )
+    if qtd == nil then
+        TriggerClientEvent( "Notify", source, "aviso", "Aceitamos apenas numeros...")
 
         return false
     else
         if not delayVMochila[user_id] or os.time() > (delayVMochila[user_id] + 1) then
             delayVMochila[user_id] = os.time()
             if user_id then
-                if vRP.tryFullPayment(user_id, quantidade * precoDaMuni) then
+                if vRP.tryFullPayment(user_id, qtd * precoDaMuni) then
                     if vRP.getInventoryWeight(user_id)+vRP.getItemWeight(municao) <= vRP.getInventoryMaxWeight(user_id) then
-                        local pagamento = quantidade * precoDaMuni
+                        local pagamento = qtd * precoDaMuni
                         TriggerClientEvent("cancelando", source, true)
-                        if checkEstoque(faccao, quantidade, tipo) then
-                            if retirarQTD(faccao, quantidade, tipo) then
+                        if checkEstoque(faccao, qtd, whatType) then
+                            if retirarQTD(faccao, qtd, whatType) then
                                 paymentFac(faccao, pagamento)
-                                vRP.giveInventoryItem(user_id, municao, quantidade)
+                                vRP.giveInventoryItem(user_id, municao, qtd)
                             end
                         else
                             TriggerClientEvent("Notify", source, 'aviso', 'Não temos essa munição no momento!')
-                            TriggerClientEvent(
-                                "Notify",
-                                source,
-                                "aviso",
-                                "teste"
-                            )
                         end
                     else
                         TriggerClientEvent("Notify", source, "aviso", "Você não tem espaço na mochila.")
