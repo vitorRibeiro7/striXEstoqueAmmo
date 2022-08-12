@@ -10,7 +10,7 @@ Tunnel.bindInterface("striXestoqueAmmo", src)
 vSERVER = Tunnel.getInterface("striXestoqueAmmo")
 
 local marcacoesVenda = {
-	{-1470.31,871.55,183.58,'Yardie'},  -- YARDIE
+	{-1467.88,864.23,183.64,'Yardie'},  -- YARDIE
 	{1077.92,-1955.27,31.04,'Russkaya'}  -- RUSSKAYA
 }
 

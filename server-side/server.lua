@@ -56,151 +56,45 @@ function src.addEstoque()
     local tipo = vRP.prompt(source, "Que tipo de munição deseja adicionar? (five, tec, mp5, g36 ou ak)", "")
 
     if tipo == "five" then
-
-        local quantidade = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
-
-        if quantidade == nil then
-
-            TriggerClientEvent(
-                "Notify",
-                source,
-                "aviso",
-                "Aceitamos apenas numeros..."
-            )
-    
-            return false
-        else
-
-            local value = vRP.getSData("strix:EstoqueMuni"..fac.."Five")
-            local saldofac = json.decode(value) or 0
-
-            saldoReal = saldofac + quantidade
-            
-            if vRP.tryGetInventoryItem(user_id, "wammo_WEAPON_PISTOL_MK2", quantidade) then
-                vRP.setSData("strix:EstoqueMuni"..fac.."Five", saldofac + quantidade)
-                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de FiveSeven atual >>> " .. saldoReal)
-            else
-                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de FiveSeven");
-                return false
-            end
-        end
+        tipo = "Five"
+        municao = "wammo_WEAPON_PISTOL_MK2"
     elseif tipo == "tec" then
-
-        local quantidade = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
-
-        if quantidade == nil then
-
-            TriggerClientEvent(
-                "Notify",
-                source,
-                "aviso",
-                "Aceitamos apenas numeros..."
-            )
-    
-            return false
-        else
-
-            local value = vRP.getSData("strix:EstoqueMuni"..fac.."Tec")
-            local saldofac = json.decode(value) or 0
-
-            saldoReal = saldofac + quantidade
-            
-            if vRP.tryGetInventoryItem(user_id, "wammo_WEAPON_MACHINEPISTOL", quantidade) then
-                vRP.setSData("strix:EstoqueMuni"..fac.."Tec", saldofac + quantidade)
-                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de Tec9 atual >>> " .. saldoReal)
-            else
-                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de Tec-9");
-                return false
-            end
-        end
+        tipo = "Tec"
+        municao = "wammo_WEAPON_MACHINEPISTOL"
     elseif tipo == "mp5" then
-
-        local quantidade = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
-
-        if quantidade == nil then
-
-            TriggerClientEvent(
-                "Notify",
-                source,
-                "aviso",
-                "Aceitamos apenas numeros..."
-            )
-    
-            return false
-        else
-
-            local value = vRP.getSData("strix:EstoqueMuni"..fac.."Mp5")
-            local saldofac = json.decode(value) or 0
-
-            saldoReal = saldofac + quantidade
-            
-            if vRP.tryGetInventoryItem(user_id, "wammo_WEAPON_SMG", quantidade) then
-                vRP.setSData("strix:EstoqueMuni"..fac.."Mp5", saldofac + quantidade)
-                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de Mp5 atual >>> " .. saldoReal)
-            else
-                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de MP5");
-                return false
-            end
-        end
+        tipo = "Mp5"
+        municao = "wammo_WEAPON_SMG"
     elseif tipo == "g36" then
-
-        local quantidade = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
-
-        if quantidade == nil then
-
-            TriggerClientEvent(
-                "Notify",
-                source,
-                "aviso",
-                "Aceitamos apenas numeros..."
-            )
-    
-            return false
-        else
-
-            local value = vRP.getSData("strix:EstoqueMuni"..fac.."G36")
-            local saldofac = json.decode(value) or 0
-
-            saldoReal = saldofac + quantidade
-            
-            if vRP.tryGetInventoryItem(user_id, "wammo_WEAPON_SPECIALCARBINE_MK2", quantidade) then
-                vRP.setSData("strix:EstoqueMuni"..fac.."G36", saldofac + quantidade)
-                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de G36 atual >>> " .. saldoReal)
-            else
-                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de G36");
-                return false
-            end
-        end
+        tipo = "G36"
+        municao = "wammo_WEAPON_SPECIALCARBINE_MK2"
     elseif tipo == "ak" then
+        tipo = "AK"
+        municao = "wammo_WEAPON_ASSAULTRIFLE_MK2"
+    else
+        return false
+        TriggerClientEvent("Notify", source,"Aviso", "Modelo não encontrado.")
+    end
 
-        local quantidade = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
-
-        if quantidade == nil then
-
-            TriggerClientEvent(
-                "Notify",
-                source,
-                "aviso",
-                "Aceitamos apenas numeros..."
-            )
+    local quantidade = tonumber(vRP.prompt(source, "Quantas unidades de munições de "..tipo.."?", ""))
     
+    if quantidade == nil then
+            TriggerClientEvent("Notify", source, "aviso", "Aceitamos apenas numeros...")   
             return false
         else
 
-            local value = vRP.getSData("strix:EstoqueMuni"..fac.."AK")
+            local value = vRP.getSData("strix:EstoqueMuni"..fac..""..tipo)
             local saldofac = json.decode(value) or 0
 
             saldoReal = saldofac + quantidade
             
-            if vRP.tryGetInventoryItem(user_id, "wammo_WEAPON_ASSAULTRIFLE_MK2", quantidade) then
-                vRP.setSData("strix:EstoqueMuni"..fac.."AK", saldofac + quantidade)
-                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de AK-47 atual >>> " .. saldoReal)
+            if vRP.tryGetInventoryItem(user_id, municao, quantidade) then
+                vRP.setSData("strix:EstoqueMuni"..fac..""..tipo, saldofac + quantidade)
+                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de "..tipo.." atual >>> " .. saldoReal)
             else
-                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de AK-47");
+                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de "..tipo);
                 return false
             end
         end
-    end
 
 end
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -211,8 +105,6 @@ function retirarQTD(faccao, quantidade, arma)
     local value = vRP.getSData("strix:EstoqueMuni"..faccao..""..arma)
     local saldofac = json.decode(value) or 0
 
-    -- OK
-
     if quantidade > saldofac then
         TriggerClientEvent("Notify", source, "aviso", "Esta facção não tem "..quantidade.." munições de "..arma.." em estoque!")
         return false
@@ -221,6 +113,7 @@ function retirarQTD(faccao, quantidade, arma)
         return true
     end
 end
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- VENDA DE MUNIÇÃO
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -244,7 +137,6 @@ function src.buyMuni(faccao)
 
     
     whatType = vRP.prompt(source, "Qual tipo de munição deseja comprar? (five, tec, mp5, g36 ou ak)", "")
-    qtd = tonumber(vRP.prompt(source, "Quantas unidades?", ""))
 
     if whatType == "five" then
         precoDaMuni = 500
@@ -272,6 +164,9 @@ function src.buyMuni(faccao)
 
         return false
     end
+
+    qtd = tonumber(vRP.prompt(source, "Quantas unidades de munição de "..tipo.."?", ""))
+
 
     if qtd == nil then
         TriggerClientEvent( "Notify", source, "aviso", "Aceitamos apenas numeros...")
@@ -303,6 +198,7 @@ function src.buyMuni(faccao)
         end
     end
 end
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- PAYMENT
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -314,6 +210,7 @@ function paymentFac(QualFac, qtd)
 
     vRP.setSData("strix:salario"..QualFac, resultado + qtd)
 end
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- SACAR
 -----------------------------------------------------------------------------------------------------------------------------------------
