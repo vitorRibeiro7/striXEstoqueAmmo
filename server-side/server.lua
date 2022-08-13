@@ -5,8 +5,8 @@ local Tunnel = module("vrp", "lib/Tunnel")
 local Proxy = module("vrp", "lib/Proxy")
 vRP = Proxy.getInterface("vRP")
 vRPclient = Tunnel.getInterface("vRP")
-src = {}
-Tunnel.bindInterface("striXestoqueAmmo", src)
+strix = {}
+Tunnel.bindInterface("striXestoqueAmmo", strix)
 vCLIENT = Tunnel.getInterface("striXestoqueAmmo")
 
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -29,7 +29,6 @@ function checkEstoque(fac, quantidade, tipo)
 
     local saldo = vRP.getSData("strix:EstoqueMuni"..fac..""..tipo)
     local saldoFac = json.decode(saldo) or 0
-    print(type(saldoFac))
 
     if saldoFac < quantidade then
         return false
@@ -40,16 +39,25 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- ADIÇÃO ESTOQUE
 -----------------------------------------------------------------------------------------------------------------------------------------
-function src.addEstoque()
+function strix.addEstoque(markName, hooklink)
     local source = source
-    local user_id = vRP.getUserId(source)
-
+	local user_id = vRP.getUserId(source)
+    -- local identity = vRP.getUserIdentity(user_id)
+    
     local numSaldo = 0
     local saldoReal = 0
 
-    local fac = VerificarMembro()
+    local fac
+
+    fac = VerificarMembro()
 
     if not vRP.hasPermission(user_id, "armamuni.menu") then
+        TriggerClientEvent('Notify', source, 'aviso', 'Você não tem permissão')
+        return false
+    end
+
+    if not fac == markName then
+        TriggerClientEvent('Notify', source, 'aviso', 'Você não é desta facção.')
         return false
     end
     
@@ -71,30 +79,32 @@ function src.addEstoque()
         tipo = "AK"
         municao = "wammo_WEAPON_ASSAULTRIFLE_MK2"
     else
+        TriggerClientEvent("Notify", source, "Aviso", "Modelo não encontrado.")
         return false
-        TriggerClientEvent("Notify", source,"Aviso", "Modelo não encontrado.")
     end
 
     local quantidade = tonumber(vRP.prompt(source, "Quantas unidades de munições de "..tipo.."?", ""))
     
     if quantidade == nil then
-            TriggerClientEvent("Notify", source, "aviso", "Aceitamos apenas numeros...")   
-            return false
+        TriggerClientEvent("Notify", source, "aviso", "Aceitamos apenas numeros...")   
+        return false
+    else
+
+        local value = vRP.getSData("strix:EstoqueMuni"..fac..""..tipo)
+        local saldofac = json.decode(value) or 0
+
+        saldoReal = saldofac + quantidade
+        
+        if vRP.tryGetInventoryItem(user_id, municao, quantidade) then
+            vRP.setSData("strix:EstoqueMuni"..fac..""..tipo, saldofac + quantidade)
+            TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de "..tipo.." atual >>> " .. saldoReal)
+            local identity = vRP.getUserIdentity(user_id)
+		    SendWebhookMessage(hooklink,"```prolog\n[COLOCOU NO ESTOQUE]: "..vRP.format(parseInt(quantidade)).." munições de "..tipo.."\n[ID]: "..user_id.." "..string.upper(identity.name).." "..string.upper(identity.firstname)..""..os.date("\n[Data]: %d/%m/%Y [Hora]: %H:%M:%S").." \r```")
         else
-
-            local value = vRP.getSData("strix:EstoqueMuni"..fac..""..tipo)
-            local saldofac = json.decode(value) or 0
-
-            saldoReal = saldofac + quantidade
-            
-            if vRP.tryGetInventoryItem(user_id, municao, quantidade) then
-                vRP.setSData("strix:EstoqueMuni"..fac..""..tipo, saldofac + quantidade)
-                TriggerClientEvent("Notify", source, "aviso", "Estoque de Munição de "..tipo.." atual >>> " .. saldoReal)
-            else
-                TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de "..tipo);
-                return false
-            end
+            TriggerClientEvent("Notify", source, "aviso", "Você não tem "..quantidade.." munições de "..tipo);
+            return false
         end
+    end
 
 end
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -119,7 +129,7 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------
 local delayVMochila = {}
 
-function src.buyMuni(faccao)
+function strix.buyMuni(faccao, hooklink)
     local source = source
     local user_id = vRP.getUserId(source)
 
@@ -165,7 +175,7 @@ function src.buyMuni(faccao)
         return false
     end
 
-    qtd = tonumber(vRP.prompt(source, "Quantas unidades de munição de "..tipo.."?", ""))
+    qtd = tonumber(vRP.prompt(source, "Quantas unidades de munição de "..whatType.."?", ""))
 
 
     if qtd == nil then
@@ -184,6 +194,8 @@ function src.buyMuni(faccao)
                             if retirarQTD(faccao, qtd, whatType) then
                                 paymentFac(faccao, pagamento)
                                 vRP.giveInventoryItem(user_id, municao, qtd)
+                                local identity = vRP.getUserIdentity(user_id)
+                                SendWebhookMessage(hooklink,"```prolog\n[COMPROU]: "..vRP.format(parseInt(qtd)).." munições de "..whatType.."\n[ID]: "..user_id.." "..string.upper(identity.name).." "..string.upper(identity.firstname).." "..os.date("\n[Data]: %d/%m/%Y [Hora]: %H:%M:%S").." \r```")
                             end
                         else
                             TriggerClientEvent("Notify", source, 'aviso', 'Não temos essa munição no momento!')
@@ -214,7 +226,7 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- SACAR
 -----------------------------------------------------------------------------------------------------------------------------------------
-function src.sacarDinDin()
+function strix.sacarDinDin(hooklink)
     local source = source
     local user_id = vRP.getUserId(source)
 
@@ -235,7 +247,18 @@ function src.sacarDinDin()
         vRP.setSData("strix:Salario" .. fac, resultado)
         vRP.giveMoney(user_id, qtd)
         TriggerClientEvent("Notify", source, "aviso", "Você Sacou: $" .. vRP.format(parseInt(qtd)))
+        local identity = vRP.getUserIdentity(user_id)
+        SendWebhookMessage(hooklink,"```prolog\n[SACOU]: $"..vRP.format(parseInt(qtd)).."\n[ID]: "..user_id.." "..string.upper(identity.name).." "..string.upper(identity.firstname).." "..os.date("\n[Data]: %d/%m/%Y [Hora]: %H:%M:%S").." \r```")
     else
         TriggerClientEvent("Notify", source, "aviso", "Quantia inválida.")
+    end
+end
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+-- WEBHOOK
+-----------------------------------------------------------------------------------------------------------------------------------------
+function SendWebhookMessage(webhook,message)
+    if webhook ~= nil and webhook ~= "" then
+        PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({content = message}), { ['Content-Type'] = 'application/json' })
     end
 end
