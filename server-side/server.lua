@@ -5,8 +5,8 @@ local Tunnel = module("vrp", "lib/Tunnel")
 local Proxy = module("vrp", "lib/Proxy")
 vRP = Proxy.getInterface("vRP")
 vRPclient = Tunnel.getInterface("vRP")
-strix = {}
-Tunnel.bindInterface("striXestoqueAmmo", strix)
+src = {}
+Tunnel.bindInterface("striXestoqueAmmo", src)
 vCLIENT = Tunnel.getInterface("striXestoqueAmmo")
 
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -16,9 +16,9 @@ function VerificarMembro()
 	local source = source
 	local user_id = vRP.getUserId(source)
 
-    if vRP.hasPermission(user_id, "yardie.permissao") then
+    if vRP.hasPermission(user_id, "lideryardie.permissao") then
         return "Yardie"
-    elseif vRP.hasPermission(user_id, "russkaya.permissao") then
+    elseif vRP.hasPermission(user_id, "liderrusskaya.permissao") then
         return "Russkaya"
     end
 end
@@ -39,24 +39,28 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- ADIÇÃO ESTOQUE
 -----------------------------------------------------------------------------------------------------------------------------------------
-function strix.addEstoque(markName, hooklink)
+function src.addEstoque(markName, hooklink)
     local source = source
 	local user_id = vRP.getUserId(source)
-    -- local identity = vRP.getUserIdentity(user_id)
     
     local numSaldo = 0
     local saldoReal = 0
 
     local fac
 
-    fac = VerificarMembro()
+    if VerificarMembro() then
+        fac = VerificarMembro()
+    else
+        TriggerClientEvent('Notify', source, 'aviso', 'Você não tem permissão.')
+        return false
+    end
 
-    if not vRP.hasPermission(user_id, "armamuni.menu") then
+    if not vRP.hasPermission(user_id, "muni.menu") then
         TriggerClientEvent('Notify', source, 'aviso', 'Você não tem permissão')
         return false
     end
 
-    if not fac == markName then
+    if  fac ~= markName then
         TriggerClientEvent('Notify', source, 'aviso', 'Você não é desta facção.')
         return false
     end
@@ -71,7 +75,7 @@ function strix.addEstoque(markName, hooklink)
         municao = "wammo_WEAPON_MACHINEPISTOL"
     elseif tipo == "mp5" then
         tipo = "Mp5"
-        municao = "wammo_WEAPON_SMG"
+        municao = "wammo_WEAPON_SMG_MK2"
     elseif tipo == "g36" then
         tipo = "G36"
         municao = "wammo_WEAPON_SPECIALCARBINE_MK2"
@@ -84,9 +88,14 @@ function strix.addEstoque(markName, hooklink)
     end
 
     local quantidade = tonumber(vRP.prompt(source, "Quantas unidades de munições de "..tipo.."?", ""))
+
+    if quantidade < 0 then 
+        TriggerClientEvent("Notify", source, "aviso", "Numeros negativos não são aceitos.")
+        return false
+    end
     
     if quantidade == nil then
-        TriggerClientEvent("Notify", source, "aviso", "Aceitamos apenas numeros...")   
+        TriggerClientEvent("Notify", source, "aviso", "Aceitamos apenas numeros...")    -- AAAAAAAAAAAAAAAAAA
         return false
     else
 
@@ -129,7 +138,7 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------
 local delayVMochila = {}
 
-function strix.buyMuni(faccao, hooklink)
+function src.buyMuni(faccao, hooklink)
     local source = source
     local user_id = vRP.getUserId(source)
 
@@ -159,7 +168,7 @@ function strix.buyMuni(faccao, hooklink)
     elseif whatType == "mp5" then
         precoDaMuni = 1384
         whatType = "Mp5"
-        municao = "wammo_WEAPON_SMG"
+        municao = "wammo_WEAPON_SMG_MK2"
     elseif whatType == "g36" then
         precoDaMuni = 1872
         whatType = "G36"
@@ -186,11 +195,11 @@ function strix.buyMuni(faccao, hooklink)
         if not delayVMochila[user_id] or os.time() > (delayVMochila[user_id] + 1) then
             delayVMochila[user_id] = os.time()
             if user_id then
-                if vRP.tryFullPayment(user_id, qtd * precoDaMuni) then
-                    if vRP.getInventoryWeight(user_id)+vRP.getItemWeight(municao) <= vRP.getInventoryMaxWeight(user_id) then
+                if checkEstoque(faccao, qtd, whatType)  then
+                    if vRP.getInventoryWeight(user_id)+(vRP.getItemWeight(municao)*qtd) <= vRP.getInventoryMaxWeight(user_id) then
                         local pagamento = qtd * precoDaMuni
                         TriggerClientEvent("cancelando", source, true)
-                        if checkEstoque(faccao, qtd, whatType) then
+                        if vRP.tryFullPayment(user_id, qtd * precoDaMuni) then
                             if retirarQTD(faccao, qtd, whatType) then
                                 paymentFac(faccao, pagamento)
                                 vRP.giveInventoryItem(user_id, municao, qtd)
@@ -198,13 +207,13 @@ function strix.buyMuni(faccao, hooklink)
                                 SendWebhookMessage(hooklink,"```prolog\n[COMPROU]: "..vRP.format(parseInt(qtd)).." munições de "..whatType.."\n[ID]: "..user_id.." "..string.upper(identity.name).." "..string.upper(identity.firstname).." "..os.date("\n[Data]: %d/%m/%Y [Hora]: %H:%M:%S").." \r```")
                             end
                         else
-                            TriggerClientEvent("Notify", source, 'aviso', 'Não temos essa munição no momento!')
+                            TriggerClientEvent("Notify", source, "aviso", "Você não tem dinheiro suficiente.")
                         end
                     else
                         TriggerClientEvent("Notify", source, "aviso", "Você não tem espaço na mochila.")
                     end
                 else
-                    TriggerClientEvent("Notify", source, "aviso", "Você não tem dinheiro suficiente.")
+                    TriggerClientEvent("Notify", source, 'aviso', 'Não temos essa munição no momento!')
                 end
             end
         end
@@ -226,11 +235,17 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- SACAR
 -----------------------------------------------------------------------------------------------------------------------------------------
-function strix.sacarDinDin(hooklink)
+function src.sacarDinDin(hooklink)
     local source = source
     local user_id = vRP.getUserId(source)
 
-    local fac = VerificarMembro()
+    local fac
+
+    if VerificarMembro() then
+        fac = VerificarMembro()
+    else
+        TriggerClientEvent('Notify', source, 'aviso', 'Você não tem permissão.')
+    end
 
     local value = vRP.getSData("strix:Salario" ..fac)
     local resultado = json.decode(value) or 0
@@ -238,6 +253,9 @@ function strix.sacarDinDin(hooklink)
     TriggerClientEvent("Notify", source, "aviso", "Saldo De Vendas: $" .. vRP.format(parseInt(resultado)))
     local qtd = vRP.prompt(source, "Digite o valor  que deseja Sacar:", "")
     qtd = tonumber(qtd)
+
+    if qtd == nil then return false end
+
     if string.sub(tonumber(qtd), 1, 1) == "-" then
         TriggerClientEvent("Notify", source, "aviso", "Quantia inválida (valor negativo).")
         return
@@ -262,3 +280,48 @@ function SendWebhookMessage(webhook,message)
         PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({content = message}), { ['Content-Type'] = 'application/json' })
     end
 end
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+-- VER ESTOQUE
+-----------------------------------------------------------------------------------------------------------------------------------------
+RegisterCommand(
+    "estoquemuni",
+    function(source, args, rawCommand)
+        
+        local source = source
+        local user_id = vRP.getUserId(source)
+        
+        if args[1] then
+            local facName
+            local fac = args[1]
+
+            if fac == "russkaya" then
+                facName = "Russkaya"
+            elseif fac == "yardie" then
+                facName = "Yardie"
+            else
+                TriggerClientEvent('Notify', source, 'aviso', 'Facção não encontrada.')
+            end
+    
+            local muniFive = vRP.getSData("strix:EstoqueMuni"..fac.."Five")
+            muniFive = json.decode(muniFive) or 0
+            local muniTec = vRP.getSData("strix:EstoqueMuni"..fac.."Tec")
+            muniTec = json.decode(muniTec) or 0
+            local muniMp5 = vRP.getSData("strix:EstoqueMuni"..fac.."Mp5")
+            muniMp5 = json.decode(muniMp5) or 0
+            local muniG36 = vRP.getSData("strix:EstoqueMuni"..fac.."G36")
+            muniG36 = json.decode(muniG36) or 0
+            local muniAK = vRP.getSData("strix:EstoqueMuni"..fac.."AK")
+            muniAK = json.decode(muniAK) or 0
+    
+            TriggerClientEvent(
+                "Notify",
+                source,
+                "aviso",
+                "Estoque da "..facName..":<br>Munição de Five: "..muniFive.."<br> Munição de Tec: "..muniTec.."<br> Munição de Mp5: "..muniMp5.."<br> Munição de G36: "..muniG36.."<br> Munição de AK: "..muniAK.."")
+        else
+            TriggerClientEvent('Notify', source, 'aviso', 'Você precisa especificar uma facção.')
+        end
+
+    end
+)
