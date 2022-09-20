@@ -12,17 +12,17 @@ vSERVER = Tunnel.getInterface("striXestoqueAmmo")
 -- coordenadax,y,z,'facção','webhooks'
 
 local marcacoesVenda = {
-	{-1467.88,864.23,183.64,'Yardie','https://discord.com/api/webhooks/1011696842871947374/LGTG4OAesUuNFG5W9yIwXKraL6T-SEbUZqnXHgQ95JKegr-rKfBOKzYZ2iKYarM_6WjJ'},  -- YARDIE
-	{1077.92,-1955.27,31.04,'Russkaya','https://discord.com/api/webhooks/1011696975269347478/g9IPswRMoWc1OZjvBE3edj6rtuJAlDc_wXtBjMM_KWIMEpqXS36fhm0rB2F-IR9qr8oa'}  -- RUSSKAYA
+	{-1467.88,864.23,183.64,'Yardie','https://discord.com/api/webhooks/'},  -- YARDIE
+	{1077.92,-1955.27,31.04,'Russkaya','https://discord.com/api/webhooks/'}  -- RUSSKAYA
 }
 
 local Estoque = {
-	{-1488.97,842.39,177.0,'Yardie','https://discord.com/api/webhooks/1011696842871947374/LGTG4OAesUuNFG5W9yIwXKraL6T-SEbUZqnXHgQ95JKegr-rKfBOKzYZ2iKYarM_6WjJ'},  -- YARDIE
-	{1077.61,-1972.7,31.48,'Russkaya','https://discord.com/api/webhooks/1011696975269347478/g9IPswRMoWc1OZjvBE3edj6rtuJAlDc_wXtBjMM_KWIMEpqXS36fhm0rB2F-IR9qr8oa'}  -- RUSSKAYA
+	{-1488.97,842.39,177.0,'Yardie','https://discord.com/api/webhooks/'},  -- YARDIE
+	{1077.61,-1972.7,31.48,'Russkaya','https://discord.com/api/webhooks/'}  -- RUSSKAYA
 }
 local Banquinhos = {
-	{-1503.23,838.81,181.6,'Yardie','https://discord.com/api/webhooks/1011696842871947374/LGTG4OAesUuNFG5W9yIwXKraL6T-SEbUZqnXHgQ95JKegr-rKfBOKzYZ2iKYarM_6WjJ'},  -- YARDIE
-	{1042.33,-1970.41,34.97,'Russkaya','https://discord.com/api/webhooks/1011696975269347478/g9IPswRMoWc1OZjvBE3edj6rtuJAlDc_wXtBjMM_KWIMEpqXS36fhm0rB2F-IR9qr8oa'}  -- RUSSKAYA
+	{-1503.23,838.81,181.6,'Yardie','https://discord.com/api/webhooks/'},  -- YARDIE
+	{1042.33,-1970.41,34.97,'Russkaya','https://discord.com/api/webhooks/'}  -- RUSSKAYA
 }
 
 -----------------------------------------------------------------------------------------------------------------------------------------
